@@ -1,0 +1,31 @@
+# fly launch detecta este arquivo; ajuste o app name se já existir.
+app = "virtualoffice"
+primary_region = "gru" # São Paulo
+
+# rede de segurança contra picos de RAM na VM de 256MB — não custa nada
+swap_size_mb = 256
+
+[build]
+  # usa o Dockerfile da raiz
+
+[http_service]
+  internal_port = 3001
+  force_https = true # obrigatório: getUserMedia só funciona em HTTPS
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  # WebSockets ativos impedem o auto-stop; com 0 a máquina dorme quando
+  # ninguém está no escritório e acorda no primeiro acesso.
+  min_machines_running = 0
+
+# Menor VM do Fly: shared-cpu-1x + 256MB. O servidor em produção é JS
+# compilado rodando em node puro (sem tsx) — cabe com folga.
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "256mb"
+
+[mounts]
+  source = "vo_data"
+  destination = "/data"
+
+[env]
+  DATA_DIR = "/data"
